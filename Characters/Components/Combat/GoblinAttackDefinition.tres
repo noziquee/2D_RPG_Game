@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="AttackDefinition2D" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Characters/Components/Combat/AttackDefinition2D.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")
+damage = 1
+cooldown_duration = 0.55
+hitbox_size = Vector2(44, 16)
+hitbox_offset = Vector2(22, 0)

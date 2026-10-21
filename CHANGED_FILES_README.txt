@@ -1,31 +1,16 @@
-Phase 4 — Basic Sword Attack
-=============================
+PHASE 5 — BASIC ENEMY AI
 
-This bundle contains only the new or modified files from the implementation.
+Apply these files to the matching paths in the existing Phase 4 animation-driven project:
+- Characters/Controllers/EnemyAIController2D.gd (new)
+- Characters/Components/Combat/GoblinAttackDefinition.tres (new)
+- Characters/Core/CharacterContext2D.gd (updated weapon mirror pivot / animation call track routing)
+- Characters/Core/Character2D.gd (updated weapon pivot mirroring)
+- Characters/Components/Combat/AttackSlash2D.gd (friendly-fire filtering)
+- Characters/Components/Combat/AttackSlash2D.tscn (player/enemy hitbox collision mask)
+- Characters/Enemies/BasicEnemy2D.gd (now composes Character2D systems and forwards intent to AI)
+- Characters/Enemies/BasicEnemy2D.tscn (AI node, knife, authored weapon animations, attack resource)
+- player.gd (player group, health receiver, death disable)
+- node_2d.tscn (spaced test positions)
+- README.md and PHASE_5_NOTES.md (documentation)
 
-Modified existing files:
-- README.md
-- project.godot
-- player.gd
-- player.tscn
-- Characters/Core/Character2D.gd
-- Characters/Core/CharacterContext2D.gd
-
-New files:
-- Characters/Components/Combat/AttackDefinition2D.gd
-- Characters/Components/Combat/AttackComponent2D.gd
-- Characters/Components/Combat/AttackSlash2D.gd
-- Characters/Components/Combat/AttackSlash2D.tscn
-- Characters/Components/Combat/DefaultAttackDefinition.tres
-- Characters/StateMachine/States/AttackState.gd
-- Characters/Enemies/BasicEnemy2D.gd
-- Characters/Enemies/BasicEnemy2D.tscn
-- combat_test_arena.tscn
-- PHASE_4_NOTES.md
-
-Input:
-- WASD: move
-- Left mouse button: aim and attack
-- Space: dash
-
-Open the full project in Godot 4.7 and run the main scene to validate. Static checks passed, but a Godot executable was unavailable in the build environment, so runtime parsing and gameplay were not exercised here.
+The full-project archive is the easiest option if you want to avoid missing a dependency. Static checks were performed; Godot runtime import/playtesting was unavailable.

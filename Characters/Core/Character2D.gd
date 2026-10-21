@@ -99,8 +99,12 @@ func _update_facing_direction() -> void:
 
 	if is_instance_valid(context.weapon_pivot):
 		context.weapon_pivot.z_index = -1 if context.aim_direction.y < -0.15 else 1
-		if not context.is_attacking:
-			context.weapon_pivot.global_rotation = context.aim_direction.angle()
+		context.weapon_pivot.scale.x = -1.0 if context.facing_direction.x < 0.0 else 1.0
+
+## Called by the Sword AnimationPlayer's slash call-method track.
+func spawn_slash() -> void:
+	if is_instance_valid(attack_component):
+		attack_component.spawn_slash_from_animation()
 
 func _get_aim_direction() -> Vector2:
 	## Controllers may override this; the base character aims along movement/facing.

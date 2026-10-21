@@ -1,6 +1,6 @@
 extends Node
 class_name AttackComponent2D
-## Owns the attack request, lock/recovery lifecycle, cooldown, and weapon swing.
+## Owns attack eligibility and lifecycle; AnimationPlayer controls the visual timing.
 
 const CharacterContext2D = preload("res://Characters/Core/CharacterContext2D.gd")
 
@@ -12,10 +12,8 @@ var context: CharacterContext2D
 var definition: AttackDefinition2D
 var slash_scene: PackedScene
 
-var _remaining_attack: float = 0.0
 var _cooldown_remaining: float = 0.0
 var _initialized: bool = false
-var _weapon_tween: Tween
 var _active_slash: AttackSlash2D
 
 func initialize(
@@ -31,13 +29,24 @@ func initialize(
 		and context.character is CharacterBody2D
 		and definition != null
 		and slash_scene != null
+		and is_instance_valid(context.weapon_pivot)
+		and is_instance_valid(context.weapon_animation_player)
 	)
 	if not _initialized:
-		push_error("AttackComponent2D requires a CharacterBody2D context, definition, and slash scene.")
+		push_error("AttackComponent2D requires a CharacterBody2D, attack definition, slash scene, Sword, and Sword/AnimationPlayer.")
+		return
+
+	var animation_player := context.weapon_animation_player
+	if not animation_player.has_animation(&"slash") or not animation_player.has_animation(&"sword_return"):
+		push_error("AttackComponent2D requires Sword animations named 'slash' and 'sword_return'.")
+		_initialized = false
 		return
 	if not slash_scene.can_instantiate():
 		push_error("AttackComponent2D: the configured slash scene cannot be instantiated.")
 		_initialized = false
+		return
+	if not animation_player.animation_finished.is_connected(_on_weapon_animation_finished):
+		animation_player.animation_finished.connect(_on_weapon_animation_finished)
 
 func try_start(requested: bool, direction: Vector2 = Vector2.ZERO) -> bool:
 	if (
@@ -60,70 +69,32 @@ func try_start(requested: bool, direction: Vector2 = Vector2.ZERO) -> bool:
 	context.aim_direction = attack_direction
 	context.attack_direction = attack_direction
 	context.is_attacking = true
-	_remaining_attack = _total_attack_duration()
-	if not _spawn_slash(attack_direction):
-		context.is_attacking = false
-		_remaining_attack = 0.0
-		_cooldown_remaining = 0.0
-		return false
-
-	_cooldown_remaining = maxf(definition.cooldown_duration, _remaining_attack)
-	_animate_weapon(attack_direction)
+	_cooldown_remaining = maxf(definition.cooldown_duration, _weapon_cycle_duration())
+	context.weapon_animation_player.play(&"slash")
 	attack_started.emit(attack_direction)
 	return true
 
 func physics_update(delta: float) -> void:
-	if not _initialized:
-		return
-	_cooldown_remaining = maxf(_cooldown_remaining - delta, 0.0)
-	if not context.is_attacking:
-		return
+	if _initialized:
+		_cooldown_remaining = maxf(_cooldown_remaining - delta, 0.0)
 
-	_remaining_attack -= delta
-	if _remaining_attack <= 0.0:
-		context.is_attacking = false
-		if is_instance_valid(context.weapon_pivot):
-			context.weapon_pivot.global_rotation = context.aim_direction.angle()
-		attack_finished.emit()
-
-func cancel() -> void:
-	if not _initialized:
+## Called by the AnimationPlayer's slash call-method track at 0.05 seconds.
+func spawn_slash_from_animation() -> void:
+	if not _initialized or not context.is_attacking:
 		return
-	if _weapon_tween != null and _weapon_tween.is_running():
-		_weapon_tween.kill()
 	if is_instance_valid(_active_slash):
 		_active_slash.queue_free()
-	_active_slash = null
-	if context != null:
-		context.is_attacking = false
-		if is_instance_valid(context.weapon_pivot):
-			context.weapon_pivot.global_rotation = context.aim_direction.angle()
-	_remaining_attack = 0.0
 
-func is_on_cooldown() -> bool:
-	return _cooldown_remaining > 0.0
-
-func _total_attack_duration() -> float:
-	return (
-		maxf(definition.windup_duration, 0.0)
-		+ maxf(definition.active_duration, 0.01)
-		+ maxf(definition.recovery_duration, 0.01)
-	)
-
-func _spawn_slash(direction: Vector2) -> bool:
 	var slash := slash_scene.instantiate() as AttackSlash2D
 	if slash == null:
 		push_error("AttackComponent2D: slash scene root must use AttackSlash2D.gd.")
-		return false
+		return
 
 	slash.source = context.character
 	slash.damage = maxi(definition.damage, 0)
-	slash.direction = direction
-	slash.windup_duration = maxf(definition.windup_duration, 0.0)
-	slash.active_duration = maxf(definition.active_duration, 0.01)
+	slash.direction = context.attack_direction
 	slash.hitbox_size = definition.hitbox_size
 	slash.hitbox_offset = definition.hitbox_offset
-	slash.slash_visual_scale = definition.slash_visual_scale
 	slash.hit_confirmed.connect(_on_slash_hit)
 
 	var host: Node = context.character.get_parent()
@@ -132,34 +103,38 @@ func _spawn_slash(direction: Vector2) -> bool:
 	host.add_child(slash)
 	slash.global_position = context.character.global_position
 	_active_slash = slash
-	return true
 
-func _animate_weapon(direction: Vector2) -> void:
-	if not is_instance_valid(context.weapon_pivot):
+func cancel() -> void:
+	if not _initialized:
 		return
+	if is_instance_valid(_active_slash):
+		_active_slash.queue_free()
+	_active_slash = null
+	_cooldown_remaining = 0.0
+	context.is_attacking = false
+	if is_instance_valid(context.weapon_animation_player):
+		context.weapon_animation_player.stop()
+		if context.weapon_animation_player.has_animation(&"RESET"):
+			context.weapon_animation_player.play(&"RESET")
 
-	if _weapon_tween != null and _weapon_tween.is_running():
-		_weapon_tween.kill()
+func is_on_cooldown() -> bool:
+	return _cooldown_remaining > 0.0
 
-	var pivot := context.weapon_pivot
-	var start_angle := direction.angle()
-	var half_sweep := deg_to_rad(definition.swing_angle_degrees) * 0.5
-	pivot.global_rotation = start_angle - half_sweep
-	_weapon_tween = create_tween()
-	if definition.windup_duration > 0.0:
-		_weapon_tween.tween_interval(definition.windup_duration)
-	_weapon_tween.tween_property(
-		pivot,
-		"global_rotation",
-		start_angle + half_sweep,
-		maxf(definition.active_duration, 0.01)
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	_weapon_tween.tween_property(
-		pivot,
-		"global_rotation",
-		start_angle,
-		maxf(definition.recovery_duration, 0.01)
-	).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+func _weapon_cycle_duration() -> float:
+	var animation_player := context.weapon_animation_player
+	var slash_animation := animation_player.get_animation(&"slash")
+	var return_animation := animation_player.get_animation(&"sword_return")
+	var playback_speed := maxf(absf(animation_player.speed_scale), 0.001)
+	return (slash_animation.length + return_animation.length) / playback_speed
+
+func _on_weapon_animation_finished(animation_name: StringName) -> void:
+	if not _initialized or not context.is_attacking:
+		return
+	if animation_name == &"slash":
+		context.weapon_animation_player.play(&"sword_return")
+	elif animation_name == &"sword_return":
+		context.is_attacking = false
+		attack_finished.emit()
 
 func _on_slash_hit(target: Node, dealt_damage: int) -> void:
 	attack_hit.emit(target, dealt_damage)
