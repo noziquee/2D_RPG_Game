@@ -1,0 +1,6 @@
+[gd_resource type="Resource" script_class="AttackDefinition2D" format=3 uid="uid://bd4kit00l2fp7"]
+
+[ext_resource type="Script" uid="uid://ocloc7xrln1q" path="res://Characters/Components/Combat/AttackDefinition2D.gd" id="1_definition"]
+
+[resource]
+script = ExtResource("1_definition")

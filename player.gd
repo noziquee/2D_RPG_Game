@@ -1,39 +1,18 @@
+extends "res://Characters/Core/Character2D.gd"
+## Player-specific input adapter. Shared movement and state behavior lives in Character2D.
 
-extends CharacterBody2D
+func _get_movement_input() -> Vector2:
+	return Input.get_vector("move_left", "move_right", "move_up", "move_down")
 
-@export var move_speed: float = 200.0
+func _get_dash_requested() -> bool:
+	return Input.is_action_just_pressed("dash")
 
-@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+func _get_aim_direction() -> Vector2:
+	var direction := get_global_mouse_position() - global_position
+	return direction.normalized() if direction.length_squared() > 0.0001 else context.facing_direction
 
-func _ready() -> void:
-	animated_sprite.play("idle")
+func _get_attack_requested() -> bool:
+	return Input.is_action_just_pressed("attack")
 
-
-func _physics_process(_delta: float) -> void:
-	# Read the player's movement input.
-	var direction: Vector2 = Input.get_vector(
-		"move_left",
-		"move_right",
-		"move_up",
-        "move_down"
-	)
-
-	# Apply normalized movement for consistent diagonal speed.
-	velocity = direction * move_speed
-
-	# Flip the sprite only when moving horizontally.
-	if direction.x < 0.0:
-		animated_sprite.flip_h = true
-	elif direction.x > 0.0:
-		animated_sprite.flip_h = false
-
-	# Switch between running and idle animations.
-	if direction != Vector2.ZERO:
-		if animated_sprite.animation != "run":
-			animated_sprite.play("run")
-	else:
-		if animated_sprite.animation != "idle":
-			animated_sprite.play("idle")
-
-	# Move the character and handle collisions.
-	move_and_slide()
+func _get_attack_direction() -> Vector2:
+	return _get_aim_direction()
