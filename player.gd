@@ -46,13 +46,12 @@ func _on_damaged(_amount: int) -> void:
 	):
 		_damage_animation_player.play(&"take_damage")
 
-func _on_death() -> void:
-	velocity = Vector2.ZERO
-	if is_instance_valid(attack_component):
-		attack_component.cancel()
-	if is_instance_valid(dash_component):
-		dash_component.cancel()
-	set_physics_process(false)
+func _on_respawn() -> void:
+	# Clear any hit reaction left over from before death.
+	if is_instance_valid(_damage_animation_player):
+		_damage_animation_player.stop()
+		if _damage_animation_player.has_animation(&"RESET"):
+			_damage_animation_player.play(&"RESET")
 
 func _on_damage_animation_finished(animation_name: StringName) -> void:
 	if animation_name != &"take_damage" or not is_alive():

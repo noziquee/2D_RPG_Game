@@ -6,6 +6,9 @@
 - Phase 3: dash component and Dash state (`PHASE_3_NOTES.md`).
 - Phase 4: AnimationPlayer-driven sword attack, animation call-method spawn event, keyframed slash hitbox window, and training enemy with an authored hit reaction (`PHASE_4_NOTES.md`).
 - Phase 5: `EnemyAIController2D` target acquisition, chase, shared animation-driven melee attacks, target-loss grace period, return-home behavior, and a damageable player (`PHASE_5_NOTES.md`).
+- Phase 6: shared `HealthComponent2D`, structured `DamageRequest2D` / `DamageResult2D` through `DamageService2D`, `Groups2D` (`PHASE_6_NOTES.md`).
+- Phase 7: Dead state, knockback through `MovementComponent2D`, respawn hook, enemy death explosion (`PHASE_7_NOTES.md`).
+- Phase 8: action locks in `CharacterContext2D` decide move, attack, and dash; `BaseComponent2D` shared by components (`PHASE_8_NOTES.md`).
 
 ## Controls
 - **WASD** — move

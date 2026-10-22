@@ -7,6 +7,7 @@ const CharacterStateMachine = preload("res://Characters/StateMachine/CharacterSt
 const IdleState = preload("res://Characters/StateMachine/States/IdleState.gd")
 const MoveState = preload("res://Characters/StateMachine/States/MoveState.gd")
 const DashState = preload("res://Characters/StateMachine/States/DashState.gd")
+const DeadState = preload("res://Characters/StateMachine/States/DeadState.gd")
 const MovementComponentScript = preload("res://Characters/Components/Movement/MovementComponent2D.gd")
 const DashComponentScript = preload("res://Characters/Components/Dash/DashComponent2D.gd")
 const AttackComponentScript = preload("res://Characters/Components/Combat/AttackComponent2D.gd")
@@ -20,6 +21,8 @@ signal health_changed(current_health: int, maximum_health: int)
 signal died
 ## Emitted after a hit removed health; carries the full DamageResult2D.
 signal damage_received(result: DamageResult2D)
+## Emitted after respawn() brings a dead character back.
+signal respawned
 
 @export_range(0.0, 2000.0, 1.0) var move_speed: float = 200.0:
 	set(value):
@@ -85,6 +88,7 @@ func _ready() -> void:
 	state_machine.register_state(&"Move", MoveState.new())
 	state_machine.register_state(&"Dash", DashState.new())
 	state_machine.register_state(&"Attack", AttackState.new())
+	state_machine.register_state(&"Dead", DeadState.new())
 	state_machine.transition_to(&"Idle")
 
 	if context.animated_sprite == null and context.character_animation_player == null:
@@ -94,14 +98,17 @@ func _ready() -> void:
 	health_changed.emit(health_component.current_health, health_component.max_health)
 
 func _physics_process(delta: float) -> void:
-	context.movement_input = _get_movement_input().normalized()
+	# Locks decide what is allowed; controllers only report intent. Movement intent is
+	# dropped while move is blocked (for example when dead). Movement still runs so
+	# knockback can finish.
+	context.movement_input = _get_movement_input().normalized() if context.can(ActionLock2D.CAPABILITY_MOVE) else Vector2.ZERO
 	_update_facing_direction()
 
-	if not context.is_attacking and dash_component.try_start(_get_dash_requested(), _get_dash_direction()):
+	# Each try_start checks its own lock, so a refused request changes nothing.
+	if dash_component.try_start(_get_dash_requested(), _get_dash_direction()):
 		state_machine.transition_to(&"Dash")
 
-	var attack_requested := _get_attack_requested()
-	if attack_requested and attack_component.try_start(true, _get_attack_direction()):
+	if attack_component.try_start(_get_attack_requested(), _get_attack_direction()):
 		state_machine.transition_to(&"Attack")
 		# Apply attack-facing in the same physics frame the authored slash starts.
 		_update_facing_direction()
@@ -195,6 +202,8 @@ func is_alive() -> bool:
 func receive_damage(request: DamageRequest2D) -> DamageResult2D:
 	var result := DamageService2D.get_default().resolve(request, self)
 	if result.applied:
+		# Knockback also applies to the killing blow, so a corpse is pushed back.
+		_apply_hit_knockback(request)
 		damage_received.emit(result)
 	return result
 
@@ -202,16 +211,41 @@ func receive_damage(request: DamageRequest2D) -> DamageResult2D:
 func take_damage(amount: int) -> void:
 	receive_damage(DamageRequest2D.create(null, amount))
 
+## Brings a dead character back at the given health (negative means full health).
+## Returns false, and changes nothing, if the character is still alive.
+func respawn(health_value: int = -1) -> bool:
+	if is_alive():
+		return false
+	if is_instance_valid(movement_component):
+		movement_component.clear_knockback()
+	context.release_lock(ActionLock2D.DEAD, self)
+	health_component.revive(health_value)
+	add_to_group(Groups2D.DAMAGEABLE)
+	state_machine.transition_to(&"Idle")
+	_on_respawn()
+	respawned.emit()
+	return true
+
 func _get_max_health() -> int:
 	## Subclasses return their exported maximum health.
 	return 1
+
+func _apply_hit_knockback(request: DamageRequest2D) -> void:
+	if request == null or request.knockback_speed <= 0.0 or not is_instance_valid(movement_component):
+		return
+	movement_component.apply_knockback(request.direction, request.knockback_speed)
 
 func _on_damaged(_amount: int) -> void:
 	## Override to play a hit reaction. Only called when the hit did not kill.
 	pass
 
 func _on_death() -> void:
-	## Override to stop, animate, or remove the character after died is emitted.
+	## Override to present the death (effects, hiding visuals, scheduling removal).
+	## Runs after died is emitted and the character is already in the Dead state.
+	pass
+
+func _on_respawn() -> void:
+	## Override to reset presentation after respawn(). Runs after the state returns to Idle.
 	pass
 
 func _on_health_changed(current_health: int, maximum_health: int) -> void:
@@ -222,5 +256,17 @@ func _on_health_damaged(amount: int) -> void:
 		_on_damaged(amount)
 
 func _on_health_died() -> void:
+	# Shared death work happens first so every subclass and listener sees a dead,
+	# inert character: no attack or dash, no damage, and no longer a damageable target.
+	_begin_death()
 	died.emit()
 	_on_death()
+
+func _begin_death() -> void:
+	context.acquire_lock(ActionLock2D.DEAD, self)
+	if is_instance_valid(attack_component):
+		attack_component.cancel()
+	if is_instance_valid(dash_component):
+		dash_component.cancel()
+	remove_from_group(Groups2D.DAMAGEABLE)
+	state_machine.transition_to(&"Dead")

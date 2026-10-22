@@ -79,6 +79,10 @@ func _on_health_changed(current_health: int, maximum_health: int) -> void:
 	var maximum := maxf(float(maximum_health), 1.0)
 	var current := clampf(float(current_health), 0.0, maximum)
 	var previous := _last_health
+	if current > 0.0 and _dead:
+		# Health above zero after a death means a respawn: leave the DEAD display.
+		_dead = false
+		heart_icon.text = "♥"
 	_maximum_health = maximum
 	progress_bar.max_value = maximum
 	damage_bar.max_value = maximum

@@ -7,6 +7,7 @@ func test_script_defaults() -> void:
 	almost(definition.cooldown_duration, 0.55, "default cooldown")
 	eq(definition.hitbox_size, Vector2(50.0, 16.0), "default hitbox size")
 	eq(definition.hitbox_offset, Vector2(25.0, 0.0), "default hitbox offset")
+	almost(definition.knockback_speed, 160.0, "default knockback speed")
 
 func test_default_resource_loads() -> void:
 	var definition := load("res://Characters/Components/Combat/DefaultAttackDefinition.tres") as AttackDefinition2D

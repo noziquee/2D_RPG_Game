@@ -15,9 +15,64 @@ var movement_facing_direction: Vector2 = Vector2.RIGHT
 var facing_direction: Vector2 = Vector2.RIGHT
 var aim_direction: Vector2 = Vector2.RIGHT
 var attack_direction: Vector2 = Vector2.RIGHT
-var is_attacking: bool = false
-var is_dashing: bool = false
 var dash_velocity: Vector2 = Vector2.ZERO
+
+## Read-only views over the action locks. Components acquire and release locks;
+## nothing else sets these.
+var is_attacking: bool:
+	get:
+		return is_locked(ActionLock2D.ATTACK)
+
+var is_dashing: bool:
+	get:
+		return is_locked(ActionLock2D.DASH)
+
+#==============================================================================
+# Action Locks
+#==============================================================================
+## Emitted when a lock gains its first holder. Emitted by this lock layer only.
+signal lock_started(lock_id: StringName)
+## Emitted when a lock loses its last holder. Emitted by this lock layer only.
+signal lock_finished(lock_id: StringName)
+
+## lock_id -> { owner instance id -> true }. Tracking holders per owner makes release idempotent.
+var _lock_holders: Dictionary = {}
+
+## Marks owner as holding lock_id. A repeat call from the same owner changes nothing.
+func acquire_lock(lock_id: StringName, owner: Object) -> void:
+	if owner == null:
+		push_error("CharacterContext2D.acquire_lock needs an owner.")
+		return
+	var holders: Dictionary = _lock_holders.get(lock_id, {})
+	var was_free := holders.is_empty()
+	holders[owner.get_instance_id()] = true
+	_lock_holders[lock_id] = holders
+	if was_free:
+		lock_started.emit(lock_id)
+
+## Removes owner's hold on lock_id. Releasing a lock the owner does not hold does nothing.
+func release_lock(lock_id: StringName, owner: Object) -> void:
+	if owner == null or not _lock_holders.has(lock_id):
+		return
+	var holders: Dictionary = _lock_holders[lock_id]
+	if not holders.erase(owner.get_instance_id()):
+		return
+	if holders.is_empty():
+		_lock_holders.erase(lock_id)
+		lock_finished.emit(lock_id)
+
+func is_locked(lock_id: StringName) -> bool:
+	return _lock_holders.has(lock_id)
+
+## True when any active lock blocks the capability.
+func is_blocked(capability: StringName) -> bool:
+	for lock_id in _lock_holders:
+		if ActionLock2D.blocks(lock_id, capability):
+			return true
+	return false
+
+func can(capability: StringName) -> bool:
+	return not is_blocked(capability)
 
 func _init(owner: CharacterBody2D) -> void:
 	character = owner
@@ -105,3 +160,18 @@ func play_locomotion_animation(animation_name: StringName) -> void:
 	):
 		if animated_sprite.animation != animation_name or not animated_sprite.is_playing():
 			animated_sprite.play(animation_name)
+
+## Plays a "death" clip when the character has one. Otherwise freezes the current pose,
+## so a dead character never keeps looping its idle or run animation.
+func play_death_animation() -> void:
+	if is_instance_valid(character_animation_player):
+		if character_animation_player.has_animation(&"death"):
+			character_animation_player.play(&"death")
+		else:
+			character_animation_player.stop(true)
+		return
+	if animated_sprite != null:
+		if animated_sprite.sprite_frames != null and animated_sprite.sprite_frames.has_animation(&"death"):
+			animated_sprite.play(&"death")
+		else:
+			animated_sprite.pause()

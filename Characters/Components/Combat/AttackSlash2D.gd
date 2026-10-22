@@ -9,6 +9,7 @@ var damage: int = 1
 var direction: Vector2 = Vector2.RIGHT
 var hitbox_size: Vector2 = Vector2(50.0, 16.0)
 var hitbox_offset: Vector2 = Vector2(25.0, 0.0)
+var knockback_speed: float = 0.0
 
 @onready var _slash_animation_player: AnimationPlayer = $SlashSprite/AnimationPlayer
 @onready var _hitbox: Area2D = $Hitbox
@@ -63,6 +64,7 @@ func _try_hit(target: Node) -> void:
 
 	var request := DamageRequest2D.create(source, damage)
 	request.direction = direction
+	request.knockback_speed = knockback_speed
 	request.hit_position = _hitbox.global_position
 	var result := target.call(&"receive_damage", request) as DamageResult2D
 	if result != null and result.applied:

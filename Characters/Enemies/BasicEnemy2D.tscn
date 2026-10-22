@@ -3,10 +3,27 @@
 [ext_resource type="Script" uid="uid://bnuprbvoxnp4i" path="res://Characters/Enemies/BasicEnemy2D.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://cn7yrvqlcfwfr" path="res://Assets/enemies/goblin/goblin_idle_spritesheet.png" id="2_goblin"]
 [ext_resource type="Texture2D" uid="uid://byyumbp7p0le0" path="res://Assets/enemies/goblin/goblin_run_spritesheet.png" id="3_2e4ny"]
+[ext_resource type="Texture2D" uid="uid://hinda57u2e8" path="res://Assets/effects (new)/enemy_afterdead_explosion_anim_spritesheet.png" id="3_gnioa"]
 [ext_resource type="Texture2D" uid="uid://chw6ty4o6y5gk" path="res://Assets/enemies/goblin/goblin_knife.png" id="4_knife"]
 [ext_resource type="Resource" path="res://Characters/Components/Combat/GoblinAttackDefinition.tres" id="5_attack"]
 [ext_resource type="Script" uid="uid://b54qb84lq3owj" path="res://Characters/Controllers/EnemyAIController2D.gd" id="6_ai"]
-[ext_resource type="PackedScene" path="res://UI/HUD/EnemyHealthBar2D.tscn" id="7_health_bar"]
+[ext_resource type="PackedScene" uid="uid://devcu7ff213t4" path="res://UI/HUD/EnemyHealthBar2D.tscn" id="7_health_bar"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jw16q"]
+atlas = ExtResource("3_gnioa")
+region = Rect2(0, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_2ik27"]
+atlas = ExtResource("3_gnioa")
+region = Rect2(16, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8t0fe"]
+atlas = ExtResource("3_gnioa")
+region = Rect2(32, 0, 16, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0lc8o"]
+atlas = ExtResource("3_gnioa")
+region = Rect2(48, 0, 16, 16)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_goblin_0"]
 atlas = ExtResource("2_goblin")
@@ -58,6 +75,23 @@ region = Rect2(80, 0, 16, 16)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_goblin"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jw16q")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_2ik27")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8t0fe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0lc8o")
+}],
+"loop": 1,
+"name": &"death",
+"speed": 12.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_goblin_0")
@@ -334,7 +368,7 @@ attack_definition = ExtResource("5_attack")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=457849524]
 sprite_frames = SubResource("SpriteFrames_goblin")
-animation = &"idle"
+animation = &"death"
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="AnimatedSprite2D" unique_id=448117894]
 libraries/ = SubResource("AnimationLibrary_enemy")
@@ -355,7 +389,6 @@ shape = SubResource("CapsuleShape2D_2nri0")
 script = ExtResource("6_ai")
 
 [node name="EnemyHealthBar2D" parent="." unique_id=1448702036 instance=ExtResource("7_health_bar")]
-layout_mode = 3
 offset_left = -38.0
 offset_top = -30.0
 offset_right = 38.0

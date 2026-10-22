@@ -37,7 +37,8 @@ func test_player_death_stops_processing() -> void:
 	player.take_damage(1000)
 	eq(deaths[0], 1, "died once")
 	not_ok(player.is_alive(), "dead")
-	not_ok(player.is_physics_processing(), "physics stopped like before")
+	eq(player.state_machine.current_state_name, &"Dead", "dead state replaces the old physics freeze")
+	ok(player.is_physics_processing(), "physics keeps running so knockback can finish")
 
 func test_receive_damage_returns_result_and_emits_event() -> void:
 	var enemy := ENEMY_SCENE.instantiate() as BasicEnemy2D
