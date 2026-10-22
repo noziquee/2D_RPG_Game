@@ -2,8 +2,7 @@ extends "res://Characters/StateMachine/CharacterState.gd"
 ## Visual state while the dash component temporarily overrides normal movement.
 
 func enter() -> void:
-	if context.animated_sprite != null and context.animated_sprite.sprite_frames.has_animation("run"):
-		context.animated_sprite.play("run")
+	context.play_locomotion_animation(&"run")
 
 func physics_update(_delta: float) -> void:
 	if not context.is_dashing:

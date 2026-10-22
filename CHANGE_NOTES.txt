@@ -1,0 +1,8 @@
+Dynamic health bars added
+
+- Added fixed player HUD with current/max health label, threshold tinting, and delayed damage trail.
+- Added floating enemy health bars that appear when damaged and follow each enemy in the 2D world.
+- Both bars use the existing health_changed(current_health, maximum_health) and died signals.
+- The visible bar updates immediately; the trailing damage bar waits 0.4 seconds after the last hit and eases to the current value over 0.3 seconds.
+- See HEALTH_BAR_NOTES.md for details.
+- Static reference checks and archive checks passed; Godot runtime test unavailable in this environment.

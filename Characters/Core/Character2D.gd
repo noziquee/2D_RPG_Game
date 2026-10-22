@@ -66,8 +66,8 @@ func _ready() -> void:
 	state_machine.register_state(&"Attack", AttackState.new())
 	state_machine.transition_to(&"Idle")
 
-	if context.animated_sprite == null:
-		push_warning("Character2D '%s' has no AnimatedSprite2D child; animation states will be skipped." % name)
+	if context.animated_sprite == null and context.character_animation_player == null:
+		push_warning("Character2D '%s' has neither CharacterAnimation nor AnimatedSprite2D; locomotion animations will be skipped." % name)
 
 func _physics_process(delta: float) -> void:
 	context.movement_input = _get_movement_input().normalized()
@@ -75,8 +75,12 @@ func _physics_process(delta: float) -> void:
 
 	if not context.is_attacking and dash_component.try_start(_get_dash_requested(), _get_dash_direction()):
 		state_machine.transition_to(&"Dash")
-	if attack_component.try_start(_get_attack_requested(), _get_attack_direction()):
+
+	var attack_requested := _get_attack_requested()
+	if attack_requested and attack_component.try_start(true, _get_attack_direction()):
 		state_machine.transition_to(&"Attack")
+		# Apply attack-facing in the same physics frame the authored slash starts.
+		_update_facing_direction()
 
 	movement_component.physics_update(delta)
 	state_machine.physics_update(delta)
@@ -84,24 +88,41 @@ func _physics_process(delta: float) -> void:
 	attack_component.physics_update(delta)
 
 func _update_facing_direction() -> void:
-	if not context.is_attacking:
-		var desired_aim := _get_aim_direction()
-		if desired_aim.length_squared() > 0.0001:
-			context.aim_direction = desired_aim.normalized()
+	# Locomotion owns the normal left/right facing. Vertical movement and idle
+	# preserve the last horizontal movement direction rather than following the mouse.
+	if context.movement_input.x < -0.001:
+		context.movement_facing_direction = Vector2.LEFT
+	elif context.movement_input.x > 0.001:
+		context.movement_facing_direction = Vector2.RIGHT
 
-	if context.aim_direction.x < -0.001:
-		context.facing_direction = Vector2.LEFT
-	elif context.aim_direction.x > 0.001:
-		context.facing_direction = Vector2.RIGHT
+	var visible_facing := context.movement_facing_direction
+	if context.is_attacking:
+		# The attack direction is captured once when the attack request succeeds.
+		if context.attack_direction.x < -0.001:
+			visible_facing = Vector2.LEFT
+		elif context.attack_direction.x > 0.001:
+			visible_facing = Vector2.RIGHT
 
-	if context.animated_sprite != null:
-		context.animated_sprite.flip_h = context.facing_direction.x < 0.0
+	context.facing_direction = visible_facing
+	context.aim_direction = context.attack_direction if context.is_attacking else context.movement_facing_direction
+
+	if is_instance_valid(context.visual_root):
+		# The player's layered body and Weapon share this visual root, so flipping
+		# it mirrors the body and weapon animation together.
+		var horizontal_scale := absf(context.visual_root.scale.x)
+		context.visual_root.scale.x = -horizontal_scale if context.facing_direction.x < 0.0 else horizontal_scale
+	elif context.animated_sprite != null:
+		# Keep compatibility with enemy/legacy AnimatedSprite2D characters.
+		var horizontal_scale := absf(context.animated_sprite.scale.x)
+		context.animated_sprite.scale.x = -horizontal_scale if context.facing_direction.x < 0.0 else horizontal_scale
+		context.animated_sprite.flip_h = false
 
 	if is_instance_valid(context.weapon_pivot):
-		context.weapon_pivot.z_index = -1 if context.aim_direction.y < -0.15 else 1
-		context.weapon_pivot.scale.x = -1.0 if context.facing_direction.x < 0.0 else 1.0
+		# The dedicated player pivot rotates around the weapon hilt and stays in
+		# front of the layered body. The animation scales only its child Weapon.
+		context.weapon_pivot.z_index = 1
 
-## Called by the Sword AnimationPlayer's slash call-method track.
+## Called by the Weapon AnimationPlayer's slash call-method track.
 func spawn_slash() -> void:
 	if is_instance_valid(attack_component):
 		attack_component.spawn_slash_from_animation()

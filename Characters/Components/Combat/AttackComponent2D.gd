@@ -33,12 +33,12 @@ func initialize(
 		and is_instance_valid(context.weapon_animation_player)
 	)
 	if not _initialized:
-		push_error("AttackComponent2D requires a CharacterBody2D, attack definition, slash scene, Sword, and Sword/AnimationPlayer.")
+		push_error("AttackComponent2D requires a CharacterBody2D, attack definition, slash scene, Weapon, and Weapon/WeaponAnimation.")
 		return
 
 	var animation_player := context.weapon_animation_player
 	if not animation_player.has_animation(&"slash") or not animation_player.has_animation(&"sword_return"):
-		push_error("AttackComponent2D requires Sword animations named 'slash' and 'sword_return'.")
+		push_error("AttackComponent2D requires Weapon animations named 'slash' and 'sword_return'.")
 		_initialized = false
 		return
 	if not slash_scene.can_instantiate():

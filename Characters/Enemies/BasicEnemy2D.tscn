@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://chw6ty4o6y5gk" path="res://Assets/enemies/goblin/goblin_knife.png" id="4_knife"]
 [ext_resource type="Resource" path="res://Characters/Components/Combat/GoblinAttackDefinition.tres" id="5_attack"]
 [ext_resource type="Script" uid="uid://b54qb84lq3owj" path="res://Characters/Controllers/EnemyAIController2D.gd" id="6_ai"]
+[ext_resource type="PackedScene" path="res://UI/HUD/EnemyHealthBar2D.tscn" id="7_health_bar"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_goblin_0"]
 atlas = ExtResource("2_goblin")
@@ -109,55 +110,103 @@ length = 0.001
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:modulate")
+tracks/0/path = NodePath(".:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Color(1, 1, 1, 1)]
 }
-tracks/1/type = "value"
-tracks/1/imported = false
-tracks/1/enabled = true
-tracks/1/path = NodePath(".:scale")
-tracks/1/interp = 1
-tracks/1/loop_wrap = true
-tracks/1/keys = {
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:self_modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 0,
-"values": [Vector2(1, 1)]
+"values": [Color(1, 1, 1, 1)]
 }
 
 [sub_resource type="Animation" id="Animation_enemy_take_damage"]
 resource_name = "take_damage"
-length = 0.35
-step = 0.05
+length = 0.3333416766010225
+step = 0.083333336
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
-tracks/0/path = NodePath(".:modulate")
+tracks/0/path = NodePath(".:frame")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.35),
-"transitions": PackedFloat32Array(0.5, 0.5),
-"update": 0,
-"values": [Color(1, 0.45, 0.45, 1), Color(1, 1, 1, 1)]
+"times": PackedFloat32Array(0, 0.33333334),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [0, 0]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
 tracks/1/enabled = true
-tracks/1/path = NodePath(".:scale")
+tracks/1/path = NodePath(".:position")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.35),
-"transitions": PackedFloat32Array(0.5, -2, 0.5),
-"update": 0,
-"values": [Vector2(1, 1), Vector2(0.6, 0.6), Vector2(1, 1)]
+"times": PackedFloat32Array(0, 0.083333336),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [Vector2(0, 0), Vector2(-2, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.083333336, 0.16666667),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [Color(1, 1, 1, 1), Color(18.892157, 18.892157, 18.892157, 1), Color(1, 1, 1, 1)]
+}
+tracks/3/type = "value"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath(".:self_modulate")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0, 0.083333336, 0.16666667),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 1,
+"values": [Color(1, 1, 1, 1), Color(18.892157, 18.892157, 18.892157, 1), Color(1, 1, 1, 1)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_enemy"]
@@ -165,10 +214,6 @@ _data = {
 &"RESET": SubResource("Animation_enemy_reset"),
 &"take_damage": SubResource("Animation_enemy_take_damage")
 }
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2nri0"]
-radius = 5.0
-height = 12.0
 
 [sub_resource type="Animation" id="Animation_weapon_reset"]
 length = 0.001
@@ -276,6 +321,10 @@ _data = {
 &"sword_return": SubResource("Animation_weapon_return")
 }
 
+[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_2nri0"]
+radius = 5.0
+height = 12.0
+
 [node name="BasicEnemy2D" type="CharacterBody2D" unique_id=803052333]
 collision_layer = 2
 script = ExtResource("1_script")
@@ -286,22 +335,28 @@ attack_definition = ExtResource("5_attack")
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=457849524]
 sprite_frames = SubResource("SpriteFrames_goblin")
 animation = &"idle"
-frame_progress = 0.20387359
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="AnimatedSprite2D" unique_id=448117894]
 libraries/ = SubResource("AnimationLibrary_enemy")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=740925303]
-shape = SubResource("CapsuleShape2D_2nri0")
-
-[node name="Sword" type="Sprite2D" parent="." unique_id=1345671504]
+[node name="Weapon" type="Sprite2D" parent="AnimatedSprite2D" unique_id=1345671504]
 position = Vector2(1, 3)
 texture = ExtResource("4_knife")
 offset = Vector2(-5, -5)
 flip_h = true
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="Sword" unique_id=997021691]
+[node name="WeaponAnimation" type="AnimationPlayer" parent="AnimatedSprite2D/Weapon" unique_id=997021691]
 libraries/ = SubResource("AnimationLibrary_weapon")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=740925303]
+shape = SubResource("CapsuleShape2D_2nri0")
 
 [node name="EnemyAIController2D" type="Node" parent="." unique_id=908506117]
 script = ExtResource("6_ai")
+
+[node name="EnemyHealthBar2D" parent="." unique_id=1448702036 instance=ExtResource("7_health_bar")]
+layout_mode = 3
+offset_left = -38.0
+offset_top = -30.0
+offset_right = 38.0
+offset_bottom = -12.0

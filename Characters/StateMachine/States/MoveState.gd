@@ -1,8 +1,7 @@
 extends "res://Characters/StateMachine/CharacterState.gd"
 
 func enter() -> void:
-	if context.animated_sprite != null and context.animated_sprite.sprite_frames.has_animation("run"):
-		context.animated_sprite.play("run")
+	context.play_locomotion_animation(&"run")
 
 func physics_update(_delta: float) -> void:
 	if context.movement_input == Vector2.ZERO:

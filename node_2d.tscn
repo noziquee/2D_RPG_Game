@@ -3,18 +3,29 @@
 [ext_resource type="Texture2D" uid="uid://l4boe6sc7vms" path="res://icon.svg" id="1_0e48y"]
 [ext_resource type="PackedScene" uid="uid://cunr1j1kfsw4f" path="res://player.tscn" id="2_epypp"]
 [ext_resource type="PackedScene" uid="uid://d1d5xg8y2n40v" path="res://Characters/Enemies/BasicEnemy2D.tscn" id="3_epypp"]
+[ext_resource type="PackedScene" path="res://UI/HUD/PlayerHealthBar.tscn" id="4_player_health_bar"]
 
 [node name="Test" type="Node2D" unique_id=2069267952]
 
 [node name="Icon" type="Sprite2D" parent="." unique_id=415748990]
-position = Vector2(-32, 26)
+position = Vector2(273, 262)
 texture = ExtResource("1_0e48y")
 
 [node name="Player" parent="." unique_id=275848191 instance=ExtResource("2_epypp")]
-position = Vector2(70, 62)
+position = Vector2(375, 298)
 
 [node name="BasicEnemy2D" parent="." unique_id=803052333 instance=ExtResource("3_epypp")]
-position = Vector2(137, 63)
+position = Vector2(442, 299)
 
 [node name="BasicEnemy2D2" parent="." unique_id=1987928814 instance=ExtResource("3_epypp")]
-position = Vector2(164, 82)
+position = Vector2(469, 318)
+
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1170797680]
+layer = 10
+
+[node name="PlayerHealthBar" parent="HUD" unique_id=133112094 instance=ExtResource("4_player_health_bar")]
+layout_mode = 3
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 362.0
+offset_bottom = 80.0

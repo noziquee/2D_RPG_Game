@@ -6,6 +6,10 @@ signal died
 
 @export_range(1, 1000, 1) var max_health: int = 5
 
+@onready var _damage_animation_player: AnimationPlayer = get_node_or_null(
+	"Player/CharacterAnimation"
+) as AnimationPlayer
+
 var health: int = 0
 var _is_dead: bool = false
 
@@ -14,6 +18,9 @@ func _ready() -> void:
 	health = maxi(max_health, 1)
 	add_to_group("player")
 	add_to_group("damageable")
+	if is_instance_valid(_damage_animation_player):
+		if not _damage_animation_player.animation_finished.is_connected(_on_damage_animation_finished):
+			_damage_animation_player.animation_finished.connect(_on_damage_animation_finished)
 	health_changed.emit(health, max_health)
 
 func _get_movement_input() -> Vector2:
@@ -53,3 +60,18 @@ func take_damage(amount: int) -> void:
 		if is_instance_valid(dash_component):
 			dash_component.cancel()
 		set_physics_process(false)
+		return
+
+	# The authored AnimationPlayer owns the hit reaction; code only requests it.
+	if (
+		is_instance_valid(_damage_animation_player)
+		and _damage_animation_player.has_animation(&"take_damage")
+	):
+		_damage_animation_player.play(&"take_damage")
+
+func _on_damage_animation_finished(animation_name: StringName) -> void:
+	if animation_name != &"take_damage" or _is_dead:
+		return
+	# Restore the sprite's authored position/modulate after the hit animation.
+	if is_instance_valid(_damage_animation_player) and _damage_animation_player.has_animation(&"RESET"):
+		_damage_animation_player.play(&"RESET")
