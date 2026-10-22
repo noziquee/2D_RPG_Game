@@ -1,5 +1,6 @@
 extends "res://Characters/Core/Character2D.gd"
-## Player input adapter. Health and damage live in Character2D's HealthComponent2D.
+## Player input adapter. Health, hit reaction, and death live in Character2D.
+## The take_damage and death clips are authored in Player/CharacterAnimation.
 
 @export_range(1, 1000, 1) var max_health: int = 5
 
@@ -11,9 +12,9 @@ func _ready() -> void:
 	super._ready()
 	add_to_group(Groups2D.PLAYER)
 	add_to_group(Groups2D.DAMAGEABLE)
-	if is_instance_valid(_damage_animation_player):
-		if not _damage_animation_player.animation_finished.is_connected(_on_damage_animation_finished):
-			_damage_animation_player.animation_finished.connect(_on_damage_animation_finished)
+
+func _get_hit_reaction_player() -> AnimationPlayer:
+	return _damage_animation_player
 
 func _get_max_health() -> int:
 	return maxi(max_health, 1)
@@ -37,25 +38,3 @@ func _get_attack_requested() -> bool:
 
 func _get_attack_direction() -> Vector2:
 	return _get_aim_direction()
-
-func _on_damaged(_amount: int) -> void:
-	# The authored AnimationPlayer owns the hit reaction; code only requests it.
-	if (
-		is_instance_valid(_damage_animation_player)
-		and _damage_animation_player.has_animation(&"take_damage")
-	):
-		_damage_animation_player.play(&"take_damage")
-
-func _on_respawn() -> void:
-	# Clear any hit reaction left over from before death.
-	if is_instance_valid(_damage_animation_player):
-		_damage_animation_player.stop()
-		if _damage_animation_player.has_animation(&"RESET"):
-			_damage_animation_player.play(&"RESET")
-
-func _on_damage_animation_finished(animation_name: StringName) -> void:
-	if animation_name != &"take_damage" or not is_alive():
-		return
-	# Restore the sprite's authored position/modulate after the hit animation.
-	if is_instance_valid(_damage_animation_player) and _damage_animation_player.has_animation(&"RESET"):
-		_damage_animation_player.play(&"RESET")

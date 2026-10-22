@@ -2,17 +2,19 @@
 
 [ext_resource type="Script" uid="uid://bktjtvagi78bu" path="res://UI/HUD/EnemyHealthBar2D.gd" id="1_script"]
 
-[node name="EnemyHealthBar2D" type="Control" unique_id=587013291]
-z_index = 10
-custom_minimum_size = Vector2(76, 18)
-layout_mode = 3
-anchors_preset = 0
-offset_right = 229.0
-offset_bottom = 21.0
-mouse_filter = 2
+[node name="EnemyHealthBar2D" type="CanvasLayer" unique_id=403933335]
+layer = 5
 script = ExtResource("1_script")
 
-[node name="Card" type="PanelContainer" parent="." unique_id=2056614731]
+[node name="Bar" type="Control" parent="." unique_id=127907639]
+custom_minimum_size = Vector2(100, 20)
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 20.0
+mouse_filter = 2
+
+[node name="Card" type="PanelContainer" parent="Bar" unique_id=786862826]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -20,23 +22,22 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-metadata/_edit_use_anchors_ = true
 
-[node name="Padding" type="MarginContainer" parent="Card" unique_id=1116819020]
+[node name="Padding" type="MarginContainer" parent="Bar/Card" unique_id=1199074144]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 3
+theme_override_constants/margin_top = 2
 theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 3
+theme_override_constants/margin_bottom = 2
 
-[node name="BarStack" type="Control" parent="Card/Padding" unique_id=1945694682]
-custom_minimum_size = Vector2(0, 10)
+[node name="BarStack" type="Control" parent="Bar/Card/Padding" unique_id=495529960]
+custom_minimum_size = Vector2(0, 12)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="DamageBar" type="ProgressBar" parent="Card/Padding/BarStack" unique_id=1284653202]
+[node name="DamageBar" type="ProgressBar" parent="Bar/Card/Padding/BarStack" unique_id=757608949]
 z_index = 1
 layout_mode = 1
 anchors_preset = 15
@@ -45,10 +46,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-value = 64.25
 show_percentage = false
 
-[node name="ProgressBar" type="ProgressBar" parent="Card/Padding/BarStack" unique_id=1559641198]
+[node name="ProgressBar" type="ProgressBar" parent="Bar/Card/Padding/BarStack" unique_id=1650980190]
 z_index = 2
 layout_mode = 1
 anchors_preset = 15
@@ -57,23 +57,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-value = 92.75
 show_percentage = false
 
-[node name="HealthLabel" type="Label" parent="Card/Padding/BarStack" unique_id=748866382]
+[node name="HealthLabel" type="Label" parent="Bar/Card/Padding/BarStack" unique_id=55184693]
 z_index = 5
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -6.5
-offset_bottom = 6.5
 grow_horizontal = 2
 grow_vertical = 2
 text = "3 / 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DamageTimer" type="Timer" parent="." unique_id=10450771]
+[node name="DamageTimer" type="Timer" parent="." unique_id=71348180]
 wait_time = 0.36
 one_shot = true

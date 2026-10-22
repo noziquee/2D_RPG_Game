@@ -88,7 +88,7 @@ func spawn_slash_from_animation() -> void:
 		return
 
 	slash.source = context.character
-	slash.damage = maxi(definition.damage, 0)
+	slash.damage = _attack_damage()
 	slash.direction = context.attack_direction
 	slash.hitbox_size = definition.hitbox_size
 	slash.hitbox_offset = definition.hitbox_offset
@@ -101,6 +101,13 @@ func spawn_slash_from_animation() -> void:
 	host.add_child(slash)
 	slash.global_position = context.character.global_position
 	_active_slash = slash
+
+## Base damage from the attack definition plus the character's attack stat.
+func _attack_damage() -> int:
+	var bonus := 0.0
+	if context.character.has_method(&"get_stat"):
+		bonus = float(context.character.call(&"get_stat", &"attack"))
+	return maxi(definition.damage + roundi(bonus), 0)
 
 func cancel() -> void:
 	if not _initialized:

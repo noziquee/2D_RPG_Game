@@ -13,8 +13,14 @@ const DashComponentScript = preload("res://Characters/Components/Dash/DashCompon
 const AttackComponentScript = preload("res://Characters/Components/Combat/AttackComponent2D.gd")
 const AttackState = preload("res://Characters/StateMachine/States/AttackState.gd")
 const HealthComponentScript = preload("res://Characters/Components/Health/HealthComponent2D.gd")
+const StatsComponentScript = preload("res://Characters/Components/Stats/StatsComponent2D.gd")
+const StatusComponentScript = preload("res://Characters/Components/Status/StatusEffectComponent2D.gd")
 const DEFAULT_ATTACK_DEFINITION = preload("res://Characters/Components/Combat/DefaultAttackDefinition.tres")
 const DEFAULT_ATTACK_SLASH_SCENE = preload("res://Characters/Components/Combat/AttackSlash2D.tscn")
+
+## Authored clip names. Code requests them; the AnimationPlayer owns the timing.
+const HIT_REACTION_CLIP: StringName = &"take_damage"
+const HIT_RESET_CLIP: StringName = &"RESET"
 
 ## Re-emitted from the HealthComponent2D so the HUD and other observers bind to the character.
 signal health_changed(current_health: int, maximum_health: int)
@@ -27,8 +33,9 @@ signal respawned
 @export_range(0.0, 2000.0, 1.0) var move_speed: float = 200.0:
 	set(value):
 		move_speed = maxf(value, 0.0)
-		if is_instance_valid(movement_component):
-			movement_component.set_move_speed(move_speed)
+		# The stat is the source of truth; _on_stat_changed moves the body's speed.
+		if is_instance_valid(stats_component):
+			stats_component.set_base(&"move_speed", move_speed)
 
 @export_group("Dash")
 @export_range(0.0, 3000.0, 1.0) var dash_speed: float = 600.0
@@ -45,6 +52,10 @@ var movement_component: MovementComponent2D
 var dash_component: DashComponent2D
 var attack_component: AttackComponent2D
 var health_component: HealthComponent2D
+var stats_component: StatsComponent2D
+var status_component: StatusEffectComponent2D
+## Tags of the hit currently being resolved; read by _on_damaged.
+var _hit_tags: Array[StringName] = []
 
 ## Current health, read from the HealthComponent2D (0 before the character is ready).
 var health: int:
@@ -72,6 +83,17 @@ func _ready() -> void:
 	add_child(attack_component)
 	attack_component.initialize(context, attack_definition, attack_slash_scene)
 
+	stats_component = StatsComponentScript.new() as StatsComponent2D
+	stats_component.name = "StatsComponent2D"
+	add_child(stats_component)
+	stats_component.set_base(&"move_speed", move_speed)
+	stats_component.set_base(&"max_health", float(_get_max_health()))
+
+	status_component = StatusComponentScript.new() as StatusEffectComponent2D
+	status_component.name = "StatusEffectComponent2D"
+	add_child(status_component)
+	status_component.initialize(self, stats_component)
+
 	health_component = HealthComponentScript.new() as HealthComponent2D
 	health_component.name = "HealthComponent2D"
 	add_child(health_component)
@@ -79,6 +101,8 @@ func _ready() -> void:
 	health_component.health_changed.connect(_on_health_changed)
 	health_component.damaged.connect(_on_health_damaged)
 	health_component.died.connect(_on_health_died)
+	# Connected last: stat changes need the movement and health components to exist.
+	stats_component.stat_changed.connect(_on_stat_changed)
 
 	state_machine = CharacterStateMachine.new()
 	state_machine.name = "CharacterStateMachine"
@@ -90,6 +114,10 @@ func _ready() -> void:
 	state_machine.register_state(&"Attack", AttackState.new())
 	state_machine.register_state(&"Dead", DeadState.new())
 	state_machine.transition_to(&"Idle")
+
+	var hit_player := _get_hit_reaction_player()
+	if is_instance_valid(hit_player) and not hit_player.animation_finished.is_connected(_on_hit_reaction_finished):
+		hit_player.animation_finished.connect(_on_hit_reaction_finished)
 
 	if context.animated_sprite == null and context.character_animation_player == null:
 		push_warning("Character2D '%s' has neither CharacterAnimation nor AnimatedSprite2D; locomotion animations will be skipped." % name)
@@ -105,6 +133,8 @@ func _physics_process(delta: float) -> void:
 	_update_facing_direction()
 
 	# Each try_start checks its own lock, so a refused request changes nothing.
+	status_component.physics_update(delta)
+
 	if dash_component.try_start(_get_dash_requested(), _get_dash_direction()):
 		state_machine.transition_to(&"Dash")
 
@@ -200,7 +230,9 @@ func is_alive() -> bool:
 
 ## Resolves a structured hit against this character. Prefer this over take_damage().
 func receive_damage(request: DamageRequest2D) -> DamageResult2D:
+	_hit_tags = request.tags if request != null else []
 	var result := DamageService2D.get_default().resolve(request, self)
+	_hit_tags = []
 	if result.applied:
 		# Knockback also applies to the killing blow, so a corpse is pushed back.
 		_apply_hit_knockback(request)
@@ -221,23 +253,69 @@ func respawn(health_value: int = -1) -> bool:
 	context.release_lock(ActionLock2D.DEAD, self)
 	health_component.revive(health_value)
 	add_to_group(Groups2D.DAMAGEABLE)
+	_reset_hit_reaction()
 	state_machine.transition_to(&"Idle")
 	_on_respawn()
 	respawned.emit()
 	return true
 
+## Subclasses return the AnimationPlayer that holds the take_damage and RESET clips.
+func _get_hit_reaction_player() -> AnimationPlayer:
+	return null
+
+func _on_hit_reaction_finished(animation_name: StringName) -> void:
+	if animation_name != HIT_REACTION_CLIP or not is_alive():
+		return
+	_reset_hit_reaction()
+	context.release_lock(ActionLock2D.HURT, self)
+	state_machine.refresh_current_state()
+
+## Restores the pose the hit clip changed. Stops the clip when there is no RESET.
+func _reset_hit_reaction() -> void:
+	var hit_player := _get_hit_reaction_player()
+	if not is_instance_valid(hit_player):
+		return
+	if hit_player.has_animation(HIT_RESET_CLIP):
+		hit_player.play(HIT_RESET_CLIP)
+	else:
+		hit_player.stop()
+
 func _get_max_health() -> int:
 	## Subclasses return their exported maximum health.
 	return 1
+
+## Current value of a stat (move_speed, max_health, attack, defense). 0 if unknown.
+func get_stat(stat_id: StringName) -> float:
+	return stats_component.get_stat(stat_id) if is_instance_valid(stats_component) else 0.0
+
+## Applies a status effect (buff or debuff). Returns false if it could not be applied.
+func apply_status(effect: StatusEffect2D, add_stacks: int = 1, applier: Node = null) -> bool:
+	return status_component.apply(effect, add_stacks, applier)
+
+func _on_stat_changed(stat_id: StringName, value: float) -> void:
+	if stat_id == &"move_speed":
+		movement_component.set_move_speed(value)
+	elif stat_id == &"max_health":
+		health_component.set_max_health(maxi(roundi(value), 1))
 
 func _apply_hit_knockback(request: DamageRequest2D) -> void:
 	if request == null or request.knockback_speed <= 0.0 or not is_instance_valid(movement_component):
 		return
 	movement_component.apply_knockback(request.direction, request.knockback_speed)
 
+## Called only for a hit that did not kill. Holds the HURT lock until the authored
+## take_damage clip finishes, which stops movement and dash. Attacks stay available.
 func _on_damaged(_amount: int) -> void:
-	## Override to play a hit reaction. Only called when the hit did not kill.
-	pass
+	# Damage over time ticks do not interrupt the character.
+	if _hit_tags.has(&"dot"):
+		return
+	var hit_player := _get_hit_reaction_player()
+	if not is_instance_valid(hit_player) or not hit_player.has_animation(HIT_REACTION_CLIP):
+		return
+	if is_instance_valid(dash_component):
+		dash_component.cancel()
+	context.acquire_lock(ActionLock2D.HURT, self)
+	hit_player.play(HIT_REACTION_CLIP)
 
 func _on_death() -> void:
 	## Override to present the death (effects, hiding visuals, scheduling removal).
@@ -264,6 +342,10 @@ func _on_health_died() -> void:
 
 func _begin_death() -> void:
 	context.acquire_lock(ActionLock2D.DEAD, self)
+	context.release_lock(ActionLock2D.HURT, self)
+	_reset_hit_reaction()
+	if is_instance_valid(status_component):
+		status_component.clear()
 	if is_instance_valid(attack_component):
 		attack_component.cancel()
 	if is_instance_valid(dash_component):

@@ -44,3 +44,9 @@ func physics_update(delta: float) -> void:
 
 func has_state(state_name: StringName) -> bool:
 	return _states.has(state_name)
+
+## Re-runs the current state's enter() so its animation resumes after another clip
+## (a hit reaction) has taken over the body.
+func refresh_current_state() -> void:
+	if _current_state != null:
+		_current_state.enter()

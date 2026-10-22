@@ -11,13 +11,6 @@ func _hit(target: Character2D, amount: int, direction: Vector2 = Vector2.RIGHT, 
 	request.knockback_speed = knockback
 	return target.receive_damage(request)
 
-func _count_death_effects() -> int:
-	var count := 0
-	for child in get_children():
-		if child is DeathEffect2D:
-			count += 1
-	return count
-
 func test_lethal_hit_enters_dead_state() -> void:
 	var player := PLAYER_SCENE.instantiate() as Character2D
 	add_child(player)
@@ -101,18 +94,10 @@ func test_respawn_defaults_to_full_health() -> void:
 	player.respawn()
 	eq(player.health, player.get_health_component().max_health, "full health")
 
-func test_enemy_death_hides_body_and_spawns_effect() -> void:
+func test_enemy_death_plays_authored_clip_and_leaves_targeting() -> void:
 	var enemy := ENEMY_SCENE.instantiate() as BasicEnemy2D
 	add_child(enemy)
 	_hit(enemy, 1000)
-	not_ok(enemy.get_node("AnimatedSprite2D").visible, "body hidden")
 	not_ok(enemy.is_in_group(Groups2D.DAMAGEABLE), "corpse is not a target")
 	eq(enemy.state_machine.current_state_name, &"Dead", "dead state")
-	eq(_count_death_effects(), 1, "one death effect spawned beside the enemy")
-
-func test_death_effect_spawns_only_once_per_death() -> void:
-	var enemy := ENEMY_SCENE.instantiate() as BasicEnemy2D
-	add_child(enemy)
-	_hit(enemy, 1000)
-	_hit(enemy, 1000)
-	eq(_count_death_effects(), 1, "further hits do not spawn more effects")
+	eq(enemy.get_node("AnimatedSprite2D").animation, &"death", "authored death clip plays")

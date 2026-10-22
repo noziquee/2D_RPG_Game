@@ -389,7 +389,3 @@ shape = SubResource("CapsuleShape2D_2nri0")
 script = ExtResource("6_ai")
 
 [node name="EnemyHealthBar2D" parent="." unique_id=1448702036 instance=ExtResource("7_health_bar")]
-offset_left = -38.0
-offset_top = -30.0
-offset_right = 38.0
-offset_bottom = -12.0

@@ -139,15 +139,14 @@ func _init(owner: CharacterBody2D) -> void:
 				animation.track_set_path(track_index, NodePath("../.."))
 
 ## Play idle/run for AnimationPlayer-based characters or fall back to AnimatedSprite2D.
-## Do not let locomotion interrupt the authored take_damage/RESET animation sequence.
+## Does nothing while the HURT or DEAD lock is held.
 func play_locomotion_animation(animation_name: StringName) -> void:
+	# A hit reaction or death owns the body until it ends. Locomotion resumes through
+	# CharacterStateMachine.refresh_current_state() once the lock is released.
+	if is_locked(ActionLock2D.HURT) or is_locked(ActionLock2D.DEAD):
+		return
 	if is_instance_valid(character_animation_player):
 		var current := character_animation_player.current_animation
-		if (
-			character_animation_player.is_playing()
-			and (current == &"take_damage" or current == &"RESET")
-		):
-			return
 		if character_animation_player.has_animation(animation_name):
 			if current != animation_name or not character_animation_player.is_playing():
 				character_animation_player.play(animation_name)

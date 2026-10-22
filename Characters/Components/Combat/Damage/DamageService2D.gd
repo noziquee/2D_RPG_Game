@@ -43,7 +43,7 @@ func resolve(request: DamageRequest2D, target: Node) -> DamageResult2D:
 		return result
 
 	result.critical = request.critical
-	result.final_damage = _mitigate(request)
+	result.final_damage = _mitigate(request, target)
 	_apply(result, health)
 
 	if result.applied:
@@ -79,12 +79,20 @@ func _validate(request: DamageRequest2D, target: Node, health: HealthComponent2D
 		return DamageResult2D.REJECT_NO_DAMAGE
 	return DamageResult2D.REJECT_NONE
 
-## Placeholder for armor and resistances: today it only applies the critical multiplier.
-func _mitigate(request: DamageRequest2D) -> int:
+## Applies the critical multiplier, then the target's defense. Defense uses
+## 100 / (100 + defense), so 100 defense halves damage. A hit that deals damage always
+## deals at least 1, so defense cannot make a real hit do nothing.
+func _mitigate(request: DamageRequest2D, target: Node) -> int:
 	var amount := float(request.base_damage)
 	if request.critical:
 		amount *= request.critical_multiplier
-	return maxi(roundi(amount), 0)
+	if target.has_method(&"get_stat"):
+		var defense := maxf(float(target.call(&"get_stat", &"defense")), -90.0)
+		amount *= 100.0 / (100.0 + defense)
+	var rounded := roundi(amount)
+	if amount > 0.0:
+		return maxi(rounded, 1)
+	return 0
 
 func _apply(result: DamageResult2D, health: HealthComponent2D) -> void:
 	result.health_before = health.current_health

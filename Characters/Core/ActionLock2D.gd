@@ -10,6 +10,8 @@ class_name ActionLock2D
 const ATTACK: StringName = &"attack"
 const DASH: StringName = &"dash"
 const DEAD: StringName = &"dead"
+## Held while a hit reaction plays. Stops movement and dash; attacks stay available.
+const HURT: StringName = &"hurt"
 
 #==============================================================================
 # Capabilities
@@ -29,4 +31,6 @@ static func blocks(lock_id: StringName, capability: StringName) -> bool:
 			return capability == CAPABILITY_ATTACK or capability == CAPABILITY_DASH
 		DASH:
 			return capability == CAPABILITY_ATTACK or capability == CAPABILITY_DASH
+		HURT:
+			return capability == CAPABILITY_MOVE or capability == CAPABILITY_DASH
 	return false

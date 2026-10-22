@@ -81,3 +81,29 @@ func test_read_only_views_follow_locks() -> void:
 	player.dash_component.cancel()
 	not_ok(player.context.is_dashing, "dash view false after cancel")
 	eq(player.context.dash_velocity, Vector2.ZERO, "dash velocity cleared on cancel")
+
+func test_hit_reaction_locks_move_and_dash_until_clip_finishes() -> void:
+	var player := _player()
+	player.take_damage(1)
+	ok(player.context.is_locked(ActionLock2D.HURT), "hurt lock while take_damage plays")
+	not_ok(player.context.can(ActionLock2D.CAPABILITY_MOVE), "movement disabled while hurt")
+	not_ok(player.context.can(ActionLock2D.CAPABILITY_DASH), "dash disabled while hurt")
+	ok(player.context.can(ActionLock2D.CAPABILITY_ATTACK), "attacks stay available while hurt")
+	player._on_hit_reaction_finished(&"take_damage")
+	not_ok(player.context.is_locked(ActionLock2D.HURT), "hurt lock released when clip finishes")
+	ok(player.context.can(ActionLock2D.CAPABILITY_MOVE), "movement enabled after the clip")
+
+func test_hit_cancels_an_active_dash() -> void:
+	var player := _player()
+	ok(player.dash_component.try_start(true, Vector2.RIGHT), "dash starts")
+	player.take_damage(1)
+	not_ok(player.context.is_dashing, "a hit ends the dash")
+
+func test_hit_reaction_ignored_for_other_clips_and_when_dead() -> void:
+	var player := _player()
+	player.take_damage(1)
+	player._on_hit_reaction_finished(&"RESET")
+	ok(player.context.is_locked(ActionLock2D.HURT), "RESET does not release the hurt lock")
+	player.take_damage(1000)
+	not_ok(player.context.is_locked(ActionLock2D.HURT), "death releases the hurt lock")
+	ok(player.context.is_locked(ActionLock2D.DEAD), "dead lock held")

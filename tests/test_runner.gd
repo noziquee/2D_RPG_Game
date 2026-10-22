@@ -17,6 +17,10 @@ const SUITES: Array[String] = [
 	"res://tests/cases/test_character_health.gd",
 	"res://tests/cases/test_death_and_knockback.gd",
 	"res://tests/cases/test_action_locks.gd",
+	"res://tests/cases/test_enemy_health_bar.gd",
+	"res://tests/cases/test_combat_feedback.gd",
+	"res://tests/cases/test_camera.gd",
+	"res://tests/cases/test_stats_and_status.gd",
 ]
 
 
