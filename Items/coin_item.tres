@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ItemDefinition2D" load_steps=3 format=3]
+[ext_resource type="Script" path="res://Items/ItemDefinition2D.gd" id="1"]
+[ext_resource type="Texture2D" path="res://Assets/props_itens/bag_coins.png" id="2"]
+[resource]
+script = ExtResource("1")
+id = &"coin"
+display_name = "Coin"
+description = "Dungeon currency. Coin pickups add directly to the currency balance."
+icon = ExtResource("2")
+category = "currency"
+max_stack = 999

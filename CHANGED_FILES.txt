@@ -1,0 +1,35 @@
+Phase 11 — World interaction, loot, and inventory
+Base repository: noziquee/2D_RPG_Game @ 22a77430881d12f81b2102cf6ddac12121e449c2
+
+NEW
+Characters/Components/CurrencyComponent2D.gd
+Characters/Components/Interaction/InteractionComponent2D.gd
+Characters/Components/InventoryComponent2D.gd
+Items/ItemDefinition2D.gd
+Items/ItemStack2D.gd
+Items/LootDropEntry2D.gd
+Items/LootTable2D.gd
+Items/LootDrop_Key.tres
+Items/LootDrop_Potion.tres
+Items/basic_chest_loot.tres
+Items/coin_item.tres
+Items/red_potion.tres
+Items/silver_key.tres
+World/Interactables/Chest2D.tscn
+World/Interactables/ChestInteractable2D.gd
+World/Interactables/KeyDoor2D.gd
+World/Interactables/KeyDoor2D.tscn
+World/Pickups/CoinPickup2D.tscn
+World/Pickups/ItemPickup2D.gd
+World/Pickups/ItemPickup2D.tscn
+tests/cases/test_world_loop.gd
+docs/PHASE_11_NOTES.md
+
+CHANGED
+Characters/Core/ActionLock2D.gd
+Characters/Core/Character2D.gd
+player.gd
+project.godot
+tests/test_runner.gd
+
+The package contains only new/changed files; extract into the repository root.

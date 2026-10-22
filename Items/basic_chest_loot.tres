@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="LootTable2D" load_steps=5 format=3]
+[ext_resource type="Script" path="res://Items/LootTable2D.gd" id="1"]
+[ext_resource type="Resource" path="res://Items/LootDrop_Key.tres" id="2"]
+[ext_resource type="Resource" path="res://Items/LootDrop_Potion.tres" id="3"]
+[ext_resource type="Script" path="res://Items/LootDropEntry2D.gd" id="4"]
+[resource]
+script = ExtResource("1")
+entries = Array[ExtResource("4")]([ExtResource("2"), ExtResource("3")])
+rolls = 1

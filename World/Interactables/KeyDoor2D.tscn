@@ -1,0 +1,15 @@
+[gd_scene load_steps=5 format=3]
+[ext_resource type="Script" path="res://World/Interactables/KeyDoor2D.gd" id="1"]
+[ext_resource type="Texture2D" path="res://Assets/tiles/wall/door_closed.png" id="2"]
+[ext_resource type="Texture2D" path="res://Assets/tiles/wall/door_fullyopen.png" id="3"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(20, 28)
+
+[node name="KeyDoor" type="StaticBody2D"]
+script = ExtResource("1")
+required_key_id = &"silver_key"
+open_texture = ExtResource("3")
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_door")

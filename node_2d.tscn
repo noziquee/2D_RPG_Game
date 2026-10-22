@@ -6,10 +6,15 @@
 [ext_resource type="PackedScene" path="res://UI/HUD/PlayerHealthBar.tscn" id="4_player_health_bar"]
 [ext_resource type="Script" uid="uid://b4t8gjqcfw8x2" path="res://UI/Feedback/CombatFeedback.gd" id="5_feedback"]
 [ext_resource type="Script" uid="uid://dhtrjd6b7egtn" path="res://addons/camera_system/core/camera_director.gd" id="6_camera"]
+[ext_resource type="PackedScene" path="res://World/Interactables/Chest2D.tscn" id="7_ir8iy"]
+[ext_resource type="PackedScene" path="res://World/Interactables/KeyDoor2D.tscn" id="8_hqns4"]
+[ext_resource type="PackedScene" path="res://World/Pickups/CoinPickup2D.tscn" id="9_x0ka3"]
+[ext_resource type="PackedScene" path="res://World/Pickups/ItemPickup2D.tscn" id="10_0h7mo"]
 
 [node name="Test" type="Node2D" unique_id=2069267952]
 
 [node name="Icon" type="Sprite2D" parent="." unique_id=415748990]
+visible = false
 position = Vector2(-124, 13)
 texture = ExtResource("1_0e48y")
 
@@ -35,6 +40,18 @@ offset_bottom = 80.0
 script = ExtResource("5_feedback")
 
 [node name="CameraDirector" type="Camera2D" parent="." unique_id=2123723409 node_paths=PackedStringArray("target")]
-zoom = Vector2(5, 5)
 script = ExtResource("6_camera")
 target = NodePath("../Player")
+zoom_level = 5.0
+
+[node name="Chest" parent="." unique_id=746595755 instance=ExtResource("7_ir8iy")]
+position = Vector2(-110, -23)
+
+[node name="KeyDoor" parent="." unique_id=1455963137 instance=ExtResource("8_hqns4")]
+position = Vector2(-219, -16)
+
+[node name="CoinPickup" parent="." unique_id=784479085 instance=ExtResource("9_x0ka3")]
+position = Vector2(-221, 51)
+
+[node name="ItemPickup" parent="." unique_id=305866351 instance=ExtResource("10_0h7mo")]
+position = Vector2(-176, 69)

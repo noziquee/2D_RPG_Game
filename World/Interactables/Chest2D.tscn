@@ -1,0 +1,23 @@
+[gd_scene load_steps=7 format=3]
+[ext_resource type="Script" path="res://World/Interactables/ChestInteractable2D.gd" id="1"]
+[ext_resource type="Texture2D" path="res://Assets/props_itens/chest_closed_anim_f0.png" id="2"]
+[ext_resource type="Texture2D" path="res://Assets/props_itens/chest_open.png" id="3"]
+[ext_resource type="Resource" path="res://Items/basic_chest_loot.tres" id="4"]
+[ext_resource type="Resource" path="res://Items/silver_key.tres" id="5"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_chest"]
+size = Vector2(18, 14)
+
+[node name="Chest" type="StaticBody2D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1")
+loot_table = ExtResource("4")
+guaranteed_item = ExtResource("5")
+guaranteed_quantity = 1
+bonus_coins = 5
+opened_texture = ExtResource("3")
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, 4)
+shape = SubResource("RectangleShape2D_chest")

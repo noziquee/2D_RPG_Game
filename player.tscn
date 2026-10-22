@@ -144,7 +144,7 @@ tracks/10/keys = {
 [sub_resource type="Animation" id="Animation_1jxqw"]
 resource_name = "death"
 length = 0.3333416766010225
-step = 0.083333336
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -234,7 +234,7 @@ tracks/6/keys = {
 resource_name = "idle"
 length = 0.5000083482347428
 loop_mode = 1
-step = 0.083333336
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -300,7 +300,7 @@ tracks/4/keys = {
 resource_name = "run"
 length = 0.5000083482347428
 loop_mode = 1
-step = 0.083333336
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -365,7 +365,7 @@ tracks/4/keys = {
 [sub_resource type="Animation" id="Animation_nvl01"]
 resource_name = "take_damage"
 length = 0.3333416766010225
-step = 0.083333336
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -510,6 +510,7 @@ _data = {
 
 [sub_resource type="Animation" id="Animation_hqtel"]
 length = 0.001
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -537,8 +538,8 @@ tracks/1/keys = {
 
 [sub_resource type="Animation" id="Animation_sweqy"]
 resource_name = "slash"
-length = 0.3
-step = 0.05
+length = 0.29166666
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -558,7 +559,7 @@ tracks/1/path = NodePath("Weapon:scale")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.3),
+"times": PackedFloat32Array(0, 0.29166666),
 "transitions": PackedFloat32Array(0.5, 0.5),
 "update": 0,
 "values": [Vector2(1, 1), Vector2(0.8, 0.95)]
@@ -570,7 +571,7 @@ tracks/2/path = NodePath("../..")
 tracks/2/interp = 1
 tracks/2/loop_wrap = true
 tracks/2/keys = {
-"times": PackedFloat32Array(0.05),
+"times": PackedFloat32Array(0.041666668),
 "transitions": PackedFloat32Array(1),
 "values": [{
 "args": [],
@@ -580,8 +581,8 @@ tracks/2/keys = {
 
 [sub_resource type="Animation" id="Animation_2hs0m"]
 resource_name = "sword_return"
-length = 0.65
-step = 0.05
+length = 0.6666667
+step = 0.041666668
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -589,7 +590,7 @@ tracks/0/path = NodePath(".:rotation")
 tracks/0/interp = 1
 tracks/0/loop_wrap = true
 tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2, 0.65),
+"times": PackedFloat32Array(0, 0.20833333, 0.6666667),
 "transitions": PackedFloat32Array(-2, -2, 0.5),
 "update": 0,
 "values": [4.4505897, 4.4505897, 0.0]
@@ -601,7 +602,7 @@ tracks/1/path = NodePath("Weapon:scale")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.65),
+"times": PackedFloat32Array(0, 0.6666667),
 "transitions": PackedFloat32Array(0.5, 0.5),
 "update": 0,
 "values": [Vector2(0.8, 0.95), Vector2(1, 1)]
