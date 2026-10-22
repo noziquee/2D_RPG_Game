@@ -11,8 +11,15 @@ const MovementComponentScript = preload("res://Characters/Components/Movement/Mo
 const DashComponentScript = preload("res://Characters/Components/Dash/DashComponent2D.gd")
 const AttackComponentScript = preload("res://Characters/Components/Combat/AttackComponent2D.gd")
 const AttackState = preload("res://Characters/StateMachine/States/AttackState.gd")
+const HealthComponentScript = preload("res://Characters/Components/Health/HealthComponent2D.gd")
 const DEFAULT_ATTACK_DEFINITION = preload("res://Characters/Components/Combat/DefaultAttackDefinition.tres")
 const DEFAULT_ATTACK_SLASH_SCENE = preload("res://Characters/Components/Combat/AttackSlash2D.tscn")
+
+## Re-emitted from the HealthComponent2D so the HUD and other observers bind to the character.
+signal health_changed(current_health: int, maximum_health: int)
+signal died
+## Emitted after a hit removed health; carries the full DamageResult2D.
+signal damage_received(result: DamageResult2D)
 
 @export_range(0.0, 2000.0, 1.0) var move_speed: float = 200.0:
 	set(value):
@@ -34,6 +41,12 @@ var state_machine: CharacterStateMachine
 var movement_component: MovementComponent2D
 var dash_component: DashComponent2D
 var attack_component: AttackComponent2D
+var health_component: HealthComponent2D
+
+## Current health, read from the HealthComponent2D (0 before the character is ready).
+var health: int:
+	get:
+		return health_component.current_health if health_component != null else 0
 
 func _ready() -> void:
 	context = CharacterContext2D.new(self)
@@ -56,6 +69,14 @@ func _ready() -> void:
 	add_child(attack_component)
 	attack_component.initialize(context, attack_definition, attack_slash_scene)
 
+	health_component = HealthComponentScript.new() as HealthComponent2D
+	health_component.name = "HealthComponent2D"
+	add_child(health_component)
+	health_component.initialize(_get_max_health())
+	health_component.health_changed.connect(_on_health_changed)
+	health_component.damaged.connect(_on_health_damaged)
+	health_component.died.connect(_on_health_died)
+
 	state_machine = CharacterStateMachine.new()
 	state_machine.name = "CharacterStateMachine"
 	add_child(state_machine)
@@ -68,6 +89,9 @@ func _ready() -> void:
 
 	if context.animated_sprite == null and context.character_animation_player == null:
 		push_warning("Character2D '%s' has neither CharacterAnimation nor AnimatedSprite2D; locomotion animations will be skipped." % name)
+
+	# Announce the starting health so observers that already connected can sync.
+	health_changed.emit(health_component.current_health, health_component.max_health)
 
 func _physics_process(delta: float) -> void:
 	context.movement_input = _get_movement_input().normalized()
@@ -157,3 +181,46 @@ func _get_dash_requested() -> bool:
 func _get_dash_direction() -> Vector2:
 	## Defaults to movement intent; the dash component falls back to facing direction.
 	return context.movement_input if context != null else Vector2.ZERO
+
+#==============================================================================
+# Health and Damage
+#==============================================================================
+func get_health_component() -> HealthComponent2D:
+	return health_component
+
+func is_alive() -> bool:
+	return health_component != null and health_component.is_alive
+
+## Resolves a structured hit against this character. Prefer this over take_damage().
+func receive_damage(request: DamageRequest2D) -> DamageResult2D:
+	var result := DamageService2D.get_default().resolve(request, self)
+	if result.applied:
+		damage_received.emit(result)
+	return result
+
+## Compatibility wrapper for callers that only have a number.
+func take_damage(amount: int) -> void:
+	receive_damage(DamageRequest2D.create(null, amount))
+
+func _get_max_health() -> int:
+	## Subclasses return their exported maximum health.
+	return 1
+
+func _on_damaged(_amount: int) -> void:
+	## Override to play a hit reaction. Only called when the hit did not kill.
+	pass
+
+func _on_death() -> void:
+	## Override to stop, animate, or remove the character after died is emitted.
+	pass
+
+func _on_health_changed(current_health: int, maximum_health: int) -> void:
+	health_changed.emit(current_health, maximum_health)
+
+func _on_health_damaged(amount: int) -> void:
+	if health_component.is_alive:
+		_on_damaged(amount)
+
+func _on_health_died() -> void:
+	died.emit()
+	_on_death()

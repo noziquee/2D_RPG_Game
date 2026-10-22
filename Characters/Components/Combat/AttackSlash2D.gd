@@ -50,25 +50,23 @@ func _try_hit(target: Node) -> void:
 		or not _hitbox.monitoring
 		or _collision_shape.disabled
 		or target == source
-		or not target.is_in_group("damageable")
-		or not target.has_method("take_damage")
+		or not target.is_in_group(Groups2D.DAMAGEABLE)
+		or not target.has_method(&"receive_damage")
 	):
 		return
 
-	# Basic player/enemy factions cannot damage their own team.
-	if source != null and (
-		(source.is_in_group("player") and target.is_in_group("player"))
-		or (source.is_in_group("enemy") and target.is_in_group("enemy"))
-	):
-		return
-
+	# One resolution per target per slash, whether or not the hit is allowed.
 	var target_id := target.get_instance_id()
 	if _hit_targets.has(target_id):
 		return
-
 	_hit_targets[target_id] = true
-	target.call("take_damage", damage)
-	hit_confirmed.emit(target, damage)
+
+	var request := DamageRequest2D.create(source, damage)
+	request.direction = direction
+	request.hit_position = _hitbox.global_position
+	var result := target.call(&"receive_damage", request) as DamageResult2D
+	if result != null and result.applied:
+		hit_confirmed.emit(target, result.final_damage)
 
 func _on_animation_finished(animation_name: StringName) -> void:
 	if animation_name == &"slash":

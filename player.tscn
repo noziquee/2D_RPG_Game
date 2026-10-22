@@ -531,6 +531,7 @@ height = 18.0
 [node name="Player" type="CharacterBody2D" unique_id=275848191]
 collision_mask = 3
 script = ExtResource("1_i3pqv")
+max_health = 100
 move_speed = 100.0
 dash_speed = 300.0
 
