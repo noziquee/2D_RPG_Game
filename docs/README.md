@@ -9,6 +9,11 @@
 - Phase 6: shared `HealthComponent2D`, structured `DamageRequest2D` / `DamageResult2D` through `DamageService2D`, `Groups2D` (`PHASE_6_NOTES.md`).
 - Phase 7: Dead state, knockback through `MovementComponent2D`, respawn hook, enemy death explosion (`PHASE_7_NOTES.md`).
 - Phase 8: action locks in `CharacterContext2D` decide move, attack, and dash; `BaseComponent2D` shared by components (`PHASE_8_NOTES.md`).
+- Phase 9: screen effects, floating text, and the camera director; combat feedback from the damage event (`PHASE_9_NOTES.md`, `CAMERA_SWAP_NOTES.md`).
+- Phase 10: stats and status effects; defense in mitigation (`PHASE_10_NOTES.md`).
+- Phase 11: interaction, loot, inventory, currency; chest, door, and pickups with an interact lock (`PHASE_11_NOTES.md`).
+- Phase 12: save manager (hardened: atomic writes, backup, slot validation, error isolation), player/inventory/wallet/world saves, F5/F9 (`PHASE_12_NOTES.md`).
+- Phase 13: slime and flying enemies (inherited from BasicEnemy2D), wave spawner, painted room; procgen evaluated and deferred (`PHASE_13_NOTES.md`, `PROCGEN_EVALUATION.md`).
 
 ## Controls
 - **WASD** — move

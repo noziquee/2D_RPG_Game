@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://World/Interactables/Door.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://Assets/tiles/wall/door_closed.png" id="2_closed"]
+[ext_resource type="Resource" path="res://Items/key_silver.tres" id="3_key"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_door"]
+size = Vector2(32, 12)
+
+[node name="Door" type="Node2D"]
+script = ExtResource("1_script")
+prompt = "Open"
+key = ExtResource("3_key")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_closed")
+
+[node name="Blocker" type="StaticBody2D" parent="."]
+collision_layer = 1
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Blocker"]
+position = Vector2(0, 10)
+shape = SubResource("RectangleShape2D_door")

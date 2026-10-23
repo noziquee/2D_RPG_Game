@@ -22,6 +22,7 @@ var effects: ScreenEffects
 var spawner: FloatingTextSpawner
 
 func _ready() -> void:
+	add_to_group(&"combat_feedback")
 	spawner = FloatingTextSpawner.new()
 	add_child(spawner)
 	effects = ScreenEffects.new()
@@ -60,3 +61,16 @@ func _impact(strength: float) -> void:
 	effects.flash(Color.WHITE, 0.15 + 0.3 * strength, 0.12 + 0.1 * strength)
 	if strength >= 0.4:
 		effects.hitstop(0.04 + 0.07 * strength)
+
+## Shows a short message at a world position (pickups, doors, chests).
+func show_message(text: String, world_pos: Vector2) -> void:
+	spawner.show_text(text, world_pos)
+
+## Finds the level's feedback node and shows a message. Does nothing if there is none.
+static func announce(host: Node, text: String, world_pos: Vector2) -> void:
+	if host == null or not host.is_inside_tree():
+		return
+	var feedback := host.get_tree().get_first_node_in_group(&"combat_feedback") as CombatFeedback
+	if feedback != null:
+		feedback.show_message(text, world_pos)
+

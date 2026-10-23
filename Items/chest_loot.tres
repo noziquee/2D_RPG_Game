@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="LootTable" format=3 uid="uid://d2bqtjutqwm53"]
+
+[ext_resource type="Script" uid="uid://jew71k7og3f1" path="res://addons/loot_table_system/core/loot_table.gd" id="1_table"]
+[ext_resource type="Script" uid="uid://c0f1wli6w7bop" path="res://addons/loot_table_system/core/loot_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://Items/key_silver.tres" id="3_key"]
+[ext_resource type="Resource" path="res://Items/potion_health.tres" id="4_potion"]
+
+[sub_resource type="Resource" id="LootEntry_key"]
+script = ExtResource("2_entry")
+item = ExtResource("3_key")
+guaranteed = true
+
+[sub_resource type="Resource" id="LootEntry_potion"]
+script = ExtResource("2_entry")
+item = ExtResource("4_potion")
+weight = 2.0
+max_count = 2
+
+[resource]
+script = ExtResource("1_table")
+entries = Array[ExtResource("2_entry")]([SubResource("LootEntry_key"), SubResource("LootEntry_potion")])

@@ -4,27 +4,31 @@
 [ext_resource type="PackedScene" uid="uid://cunr1j1kfsw4f" path="res://player.tscn" id="2_epypp"]
 [ext_resource type="PackedScene" uid="uid://d1d5xg8y2n40v" path="res://Characters/Enemies/BasicEnemy2D.tscn" id="3_epypp"]
 [ext_resource type="PackedScene" path="res://UI/HUD/PlayerHealthBar.tscn" id="4_player_health_bar"]
-[ext_resource type="Script" uid="uid://b4t8gjqcfw8x2" path="res://UI/Feedback/CombatFeedback.gd" id="5_feedback"]
-[ext_resource type="Script" uid="uid://dhtrjd6b7egtn" path="res://addons/camera_system/core/camera_director.gd" id="6_camera"]
-[ext_resource type="PackedScene" path="res://World/Interactables/Chest2D.tscn" id="7_ir8iy"]
-[ext_resource type="PackedScene" path="res://World/Interactables/KeyDoor2D.tscn" id="8_hqns4"]
-[ext_resource type="PackedScene" path="res://World/Pickups/CoinPickup2D.tscn" id="9_x0ka3"]
-[ext_resource type="PackedScene" path="res://World/Pickups/ItemPickup2D.tscn" id="10_0h7mo"]
+[ext_resource type="Script" path="res://UI/Feedback/CombatFeedback.gd" id="5_feedback"]
+[ext_resource type="Script" path="res://addons/camera_system/core/camera_director.gd" id="6_camera"]
+[ext_resource type="Script" path="res://World/Level/Level.gd" id="10_level"]
+[ext_resource type="PackedScene" path="res://World/Interactables/Chest.tscn" id="7_chest"]
+[ext_resource type="PackedScene" path="res://World/Interactables/Door.tscn" id="8_door"]
+[ext_resource type="PackedScene" path="res://World/Interactables/ItemPickup.tscn" id="9_pickup"]
+[ext_resource type="PackedScene" path="res://World/Interactables/CoinPickup.tscn" id="10_coin"]
+[ext_resource type="Resource" path="res://Items/potion_health.tres" id="11_potion"]
+[ext_resource type="Resource" path="res://Items/key_silver.tres" id="12_key"]
 
 [node name="Test" type="Node2D" unique_id=2069267952]
+script = ExtResource("10_level")
 
 [node name="Icon" type="Sprite2D" parent="." unique_id=415748990]
-visible = false
-position = Vector2(-124, 13)
+position = Vector2(273, 262)
 texture = ExtResource("1_0e48y")
 
 [node name="Player" parent="." unique_id=275848191 instance=ExtResource("2_epypp")]
+position = Vector2(375, 298)
 
 [node name="BasicEnemy2D" parent="." unique_id=803052333 instance=ExtResource("3_epypp")]
-position = Vector2(104, 68)
+position = Vector2(442, 299)
 
 [node name="BasicEnemy2D2" parent="." unique_id=1987928814 instance=ExtResource("3_epypp")]
-position = Vector2(154, 87)
+position = Vector2(469, 318)
 
 [node name="HUD" type="CanvasLayer" parent="." unique_id=1170797680]
 layer = 10
@@ -36,22 +40,34 @@ offset_top = 4.0
 offset_right = 362.0
 offset_bottom = 80.0
 
-[node name="CombatFeedback" type="Node2D" parent="." unique_id=859158866]
+[node name="CombatFeedback" type="Node2D" parent="."]
 script = ExtResource("5_feedback")
 
-[node name="CameraDirector" type="Camera2D" parent="." unique_id=2123723409 node_paths=PackedStringArray("target")]
+[node name="CameraDirector" type="Camera2D" parent="."]
 script = ExtResource("6_camera")
-target = NodePath("../Player")
+zoom = Vector2(5, 5)
 zoom_level = 5.0
+target = NodePath("../Player")
 
-[node name="Chest" parent="." unique_id=746595755 instance=ExtResource("7_ir8iy")]
-position = Vector2(-110, -23)
+[node name="Chest" parent="." instance=ExtResource("7_chest")]
+position = Vector2(330, 300)
+id = &"chest_start"
 
-[node name="KeyDoor" parent="." unique_id=1455963137 instance=ExtResource("8_hqns4")]
-position = Vector2(-219, -16)
+[node name="Door" parent="." instance=ExtResource("8_door")]
+position = Vector2(520, 290)
+id = &"door_east"
 
-[node name="CoinPickup" parent="." unique_id=784479085 instance=ExtResource("9_x0ka3")]
-position = Vector2(-221, 51)
+[node name="PotionPickup" parent="." instance=ExtResource("9_pickup")]
+position = Vector2(348, 330)
+id = &"potion_start"
+item = ExtResource("11_potion")
 
-[node name="ItemPickup" parent="." unique_id=305866351 instance=ExtResource("10_0h7mo")]
-position = Vector2(-176, 69)
+[node name="KeyPickup" parent="." instance=ExtResource("9_pickup")]
+position = Vector2(300, 330)
+id = &"key_floor"
+item = ExtResource("12_key")
+
+[node name="CoinPickup" parent="." instance=ExtResource("10_coin")]
+position = Vector2(400, 330)
+id = &"coins_start"
+

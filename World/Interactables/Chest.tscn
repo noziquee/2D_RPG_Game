@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://World/Interactables/Chest.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://Assets/props_itens/chest_closed_anim_f0.png" id="2_closed"]
+[ext_resource type="Resource" path="res://Items/chest_loot.tres" id="3_loot"]
+
+[node name="Chest" type="Node2D"]
+script = ExtResource("1_script")
+prompt = "Open"
+loot = ExtResource("3_loot")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_closed")

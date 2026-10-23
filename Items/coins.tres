@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="CurrencyDefinition" format=3]
+
+[ext_resource type="Script" path="res://addons/currency_system/core/currency_definition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://Assets/props_itens/bag_coins.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"coins"
+display_name = "Coins"
+icon = ExtResource("2_icon")
+color = Color(1, 0.76078, 0.243137, 1)

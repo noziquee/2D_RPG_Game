@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="EnemyType" format=3]
+
+[ext_resource type="Script" path="res://addons/wave_spawner_system/core/enemy_type.gd" id="1_type"]
+[ext_resource type="PackedScene" path="res://Characters/Enemies/FlyingEnemy.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_type")
+id = &"fly"
+display_name = "Flying enemy"
+cost = 2.0
+weight = 1.0
+first_wave = 2
+scene = ExtResource("2_scene")
